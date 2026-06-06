@@ -1,64 +1,111 @@
-![Licencia](https://img.shields.io/github/license/CodigosdeProgramacion/plantilla-crud-bootstrap)
+# Laboratorio 4 - Aplicación Web Serverless en AWS
 
-# Plantilla CRUD con Bootstrap
+Frontend estático para una aplicación CRUD sencilla de gestión de usuarios. La interfaz está preparada para publicarse en Amazon S3 Static Website Hosting y consumir una API REST serverless construida con API Gateway, AWS Lambda, Amazon DynamoDB, IAM y CloudWatch.
 
-Esta es una plantilla para desarrollar aplicaciones CRUD con una interfaz de usuario basada en Bootstrap 5. Puedes utilizar esta plantilla como punto de partida para tus proyectos web que involucren operaciones básicas de Crear, Leer, Actualizar y Eliminar.
+## Arquitectura utilizada
 
-## Requisitos
-
-Asegúrate de tener acceso a internet durante el desarrollo, ya que Bootstrap se carga desde un CDN.
-
-## Uso
-
-1. Clona este repositorio:
-
-    ```bash
-    git clone https://github.com/CodigosdeProgramacion/plantilla-crud-bootstrap
-    ```
-
-2. Abre el archivo `index.html` en tu navegador web.
-
-3. Personaliza según las necesidades de tu proyecto.
-
-## Estructura del Proyecto
-
+```text
+Usuario -> Amazon S3 -> API Gateway -> AWS Lambda -> Amazon DynamoDB -> Amazon CloudWatch
 ```
+
+## Servicios AWS utilizados
+
+- Amazon S3: alojamiento del sitio web estático.
+- API Gateway: exposición de endpoints REST.
+- AWS Lambda: lógica backend en Node.js.
+- Amazon DynamoDB: almacenamiento de usuarios.
+- IAM: permisos entre servicios AWS.
+- CloudWatch: monitoreo y logs de ejecución.
+
+## Estructura de archivos
+
+```text
 plantilla-crud-bootstrap/
 |-- css/
-|   |-- estilo.css
+|   |-- styles.css
 |-- js/
+|   |-- app.js
+|   |-- config.js
 |-- index.html
-|-- nuevo.html
-|-- edita.html
-|-- elimina.html
+|-- README.md
 ```
 
-- `css/`: Carpeta que contiene los archivos CSS necesarios, como un archivo de estilo personalizado (estilo.css).
-- `index.html`: Página principal que muestra la lista de elementos y permite la navegación a las páginas de nuevo, editar y eliminar.
-- `nuevo.html`: Página para agregar nuevos elementos al sistema.
-- `edita.html`: Página para editar elementos existentes.
-- `elimina.html`: Página para eliminar elementos.
+## Configuración de API_BASE_URL
 
-## Capturas
+Edite `js/config.js` y reemplace el valor temporal por la URL base del stage de API Gateway:
 
-| [<img src="images/index.png" width=500><br><sub>index.html</sub>](index.html) |  [<img src="images/nuevo.png" width=500><br><sub>nuevo.html</sub>](nuevo.html) |
-| :---: | :---: |
-| [<img src="images/edita.png" width=500><br><sub>modifica.html</sub>](modifica.html) |  [<img src="images/elimina.png" width=500><br><sub>elimina.html</sub>](elimina.html) |
+```javascript
+const API_BASE_URL = "https://abc123.execute-api.us-east-1.amazonaws.com/prod";
+```
 
-## Tecnologías utilizadas
+No incluya credenciales, access keys, llaves privadas ni secretos en este repositorio.
 
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+## Cómo ejecutar localmente
 
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+Puede abrir `index.html` directamente en el navegador o usar Live Server desde Visual Studio Code. Para consumir la API real, asegúrese de configurar primero `API_BASE_URL`.
 
-![Javascript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+## Cómo publicar en Amazon S3
 
-![Bootstrap 5](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
+1. Cree un bucket en Amazon S3.
+2. Habilite Static Website Hosting.
+3. Configure `index.html` como documento de inicio.
+4. Suba `index.html`, la carpeta `css/` y la carpeta `js/`.
+5. Configure los permisos necesarios para servir el sitio público o use CloudFront si el laboratorio lo requiere.
+6. Abra la URL del sitio estático generada por S3.
 
-## Contribuciones
+## Endpoints utilizados
 
-Siéntete libre de contribuir al proyecto.
+```text
+GET  {API_BASE_URL}/usuarios
+POST {API_BASE_URL}/usuarios
+```
 
-## Licencia
+El POST envia el siguiente JSON:
 
-Este proyecto está bajo la Licencia [MIT](LICENSE).
+```json
+{
+  "nombre": "Luis Chay",
+  "email": "luis@usac.edu.gt"
+}
+```
+
+El GET puede responder con un arreglo directo:
+
+```json
+[
+  {
+    "id": "uuid",
+    "nombre": "Luis Chay",
+    "email": "luis@usac.edu.gt",
+    "fechaCreacion": "2026-06-05T00:00:00.000Z"
+  }
+]
+```
+
+También puede responder con la propiedad `usuarios`:
+
+```json
+{
+  "usuarios": [
+    {
+      "id": "uuid",
+      "nombre": "Luis Chay",
+      "email": "luis@usac.edu.gt",
+      "fechaCreacion": "2026-06-05T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+## Nota sobre CORS
+
+API Gateway y Lambda deben permitir CORS para el dominio del sitio publicado en S3. Durante pruebas locales también puede ser necesario permitir el origen usado por Live Server, por ejemplo `http://127.0.0.1:5500`.
+
+## Evidencias sugeridas para el informe
+
+- Sitio publicado en Amazon S3.
+- API Gateway respondiendo correctamente.
+- Lambda ejecutada al crear y listar usuarios.
+- Tabla DynamoDB con registros creados desde el frontend.
+- Logs disponibles en CloudWatch.
+- Frontend consumiendo GET y POST desde la API REST.

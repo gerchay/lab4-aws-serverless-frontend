@@ -1,105 +1,148 @@
 <!DOCTYPE html>
-<html lang="es" class="h-100">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empresa</title>
+    <meta name="description" content="Frontend estático para laboratorio serverless en AWS con S3, API Gateway, Lambda y DynamoDB.">
+    <title>Gestión de Usuarios AWS Serverless</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-
-    <link href="css/estilo.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
 </head>
 
-<body class="d-flex flex-column h-100">
-
-    <!-- Begin page content -->
-    <main class="flex-shrink-0">
-        <div class="container">
-            <h3 class="my-3" id="titulo">Empleados</h3>
-
-            <a href="nuevo.html" class="btn btn-success">Agregar</a>
-
-            <table class="table table-hover table-bordered my-3" aria-describedby="titulo">
-                <thead class="table-dark">
-                    <tr>
-                        <th scope="col">Clave</th>
-                        <th scope="col">Nombre</th>
-                        <th scope="col">Teléfono</th>
-                        <th scope="col">Correo</th>
-                        <th scope="col">Departamento</th>
-                        <th scope="col">Opciones</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <tr>
-                        <td>12345</td>
-                        <td>JUAN PEREZ</td>
-                        <td>0123456789</td>
-                        <td>JUANPEREZ@DOMINIO.COM</td>
-                        <td>RECURSOS HUMANOS</td>
-                        <td>
-                            <a href="edita.html" class="btn btn-warning btn-sm me-2">Editar</a>
-
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#eliminaModal" data-bs-id="1">Eliminar</button>
-                        </td>
-                    </tr>
-
-                </tbody>
-            </table>
-        </div>
-    </main>
-
-    <footer class="footer mt-auto py-3 bg-body-tertiary">
-        <div class="container">
-            <span class="text-body-secondary"> 2024 | Códigos de Programación</span>
-        </div>
-    </footer>
-
-    <div class="modal fade" id="eliminaModal" tabindex="-1" aria-labelledby="eliminaModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="eliminaModalLabel">Aviso</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<body>
+    <header class="hero-section text-white">
+        <div class="container py-5">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8">
+                    <span class="badge text-bg-light text-primary-emphasis mb-3">Laboratorio 4 - Aplicación Web Serverless en AWS</span>
+                    <h1 class="display-5 fw-bold mb-3">Gestión de Usuarios AWS Serverless</h1>
+                    <p class="lead mb-0">Aplicación frontend publicada en Amazon S3 y conectada a servicios serverless de AWS.</p>
                 </div>
-                <div class="modal-body">
-                    <p>¿Desea eliminar este registro?</p>
-                </div>
-                <div class="modal-footer">
-                    <form id="form-elimina" action="" method="post">
-                        <input type="hidden" name="_method" value="delete">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
+                <div class="col-lg-4">
+                    <div class="architecture-panel">
+                        <p class="small text-uppercase mb-2">Arquitectura</p>
+                        <p class="mb-0">Usuario -> S3 -> API Gateway -> Lambda -> DynamoDB -> CloudWatch</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </header>
+
+    <main class="container py-4 py-lg-5">
+        <div id="alertContainer" class="alert-container" aria-live="polite"></div>
+
+        <section class="row g-4 align-items-start">
+            <div class="col-lg-5">
+                <div class="card app-card">
+                    <div class="card-body p-4">
+                        <div class="section-heading mb-4">
+                            <p class="text-uppercase text-primary fw-semibold small mb-1">Registro</p>
+                            <h2 class="h4 mb-1">Nuevo usuario</h2>
+                            <p class="text-body-secondary mb-0">Complete los datos para enviarlos a la API REST serverless.</p>
+                        </div>
+
+                        <form id="userForm" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Luis Chay" required>
+                                <div class="invalid-feedback">El nombre es obligatorio.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Correo electrónico</label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="luis@usac.edu.gt" required>
+                                <div class="invalid-feedback">Ingrese un correo electrónico válido.</div>
+                            </div>
+
+                            <button id="saveButton" type="submit" class="btn btn-primary w-100">
+                                <span class="button-label">Guardar usuario</span>
+                                <span class="spinner-border spinner-border-sm ms-2 d-none" aria-hidden="true"></span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card app-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between gap-3 mb-4">
+                            <div>
+                                <p class="text-uppercase text-primary fw-semibold small mb-1">DynamoDB</p>
+                                <h2 class="h4 mb-1">Usuarios registrados</h2>
+                                <p class="text-body-secondary mb-0">Listado obtenido desde el endpoint GET /usuarios.</p>
+                            </div>
+                            <button id="refreshButton" type="button" class="btn btn-outline-primary align-self-sm-start">
+                                <span class="button-label">Actualizar lista</span>
+                                <span class="spinner-border spinner-border-sm ms-2 d-none" aria-hidden="true"></span>
+                            </button>
+                        </div>
+
+                        <div id="tableLoading" class="loading-state d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <span>Consultando usuarios...</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" aria-describedby="usersTableTitle">
+                                <caption id="usersTableTitle" class="visually-hidden">Tabla de usuarios registrados</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Nombre</th>
+                                        <th scope="col">Correo electrónico</th>
+                                        <th scope="col">Fecha de creación</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr>
+                                        <td colspan="4" class="empty-state">Cargando usuarios...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card app-card mt-4">
+            <div class="card-body p-4">
+                <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+                    <div>
+                        <p class="text-uppercase text-primary fw-semibold small mb-1">Servicios utilizados</p>
+                        <h2 class="h4 mb-1">Arquitectura serverless AWS</h2>
+                        <p class="text-body-secondary mb-0">Componentes principales para publicar el frontend y procesar el CRUD de usuarios.</p>
+                    </div>
+                </div>
+
+                <div class="service-grid">
+                    <span class="service-badge">Amazon S3</span>
+                    <span class="service-badge">API Gateway</span>
+                    <span class="service-badge">AWS Lambda</span>
+                    <span class="service-badge">Amazon DynamoDB</span>
+                    <span class="service-badge">IAM</span>
+                    <span class="service-badge">CloudWatch</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer py-4">
+        <div class="container text-center">
+            <span>Maestría en Tecnologías de la Información y Comunicación - USAC</span>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
-
-    <script>
-
-        const eliminaModal = document.getElementById('eliminaModal')
-        if (eliminaModal) {
-            eliminaModal.addEventListener('show.bs.modal', event => {
-                // Button that triggered the modal
-                const button = event.relatedTarget
-                // Extract info from data-bs-* attributes
-                const id = button.getAttribute('data-bs-id')
-
-                // Update the modal's content.
-                const form = eliminaModal.querySelector('#form-elimina')
-                form.setAttribute('action', 'elimina.html?id=' + id)
-            })
-        }
-    </script>
-
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
 </body>
 
 </html>
